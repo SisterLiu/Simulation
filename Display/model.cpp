@@ -9,19 +9,23 @@ HRESULT Block::CreateBlockBuffer(_In_ ID3D11Device* pDevice,
 	if(pDevice == NULL)
 		return 1;
 
-	BlockVertex pVertexs[3];
-	pVertexs[0].pos = XMFLOAT3(0.1f, 0.1f, 0.5f);
-	pVertexs[1].pos = XMFLOAT3(0.2f, 0.1f, 0.5f);
-	pVertexs[2].pos = XMFLOAT3(0.2f, 0.2f, 0.2f);
-
-	*pVertexCount = 3;
-
-	unsigned int pIndexs[3] = 
+	BlockVertex pVertexs[] =
 	{
-		0,2,1
+		XMFLOAT3(0, 0, 0.5f), XMFLOAT2(0, 1),
+		XMFLOAT3(2, 0, 0.5f), XMFLOAT2(1, 1),
+		XMFLOAT3(2, 2, 0.5f), XMFLOAT2(1, 0),
+		XMFLOAT3(0, 2, 0.5f), XMFLOAT2(0, 0),
 	};
 
-	*pIndexCount = 3;
+	*pVertexCount = ARRAYSIZE(pVertexs);
+
+	unsigned int pIndexs[] = 
+	{
+		0,2,1,
+		0,3,2,
+	};
+
+	*pIndexCount = ARRAYSIZE(pIndexs);
 
 	//------------------------------------------------------------------
 	//	Create Vertex Buffer
@@ -31,7 +35,7 @@ HRESULT Block::CreateBlockBuffer(_In_ ID3D11Device* pDevice,
 	ZeroMemory(&vertexBufferDescribe, sizeof(vertexBufferDescribe));
 	vertexBufferDescribe.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDescribe.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDescribe.ByteWidth = sizeof(BlockVertex) * 3;
+	vertexBufferDescribe.ByteWidth = sizeof(BlockVertex) * (*pVertexCount);
 	vertexBufferDescribe.CPUAccessFlags = 0;
 
 	//	Set vertex buffer data
@@ -52,7 +56,7 @@ HRESULT Block::CreateBlockBuffer(_In_ ID3D11Device* pDevice,
 	ZeroMemory(&indexBufferDescribe, sizeof(indexBufferDescribe));
 	indexBufferDescribe.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDescribe.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDescribe.ByteWidth = sizeof(unsigned int) * 3;
+	indexBufferDescribe.ByteWidth = sizeof(unsigned int) * (*pIndexCount);
 	indexBufferDescribe.CPUAccessFlags = 0;
 
 	//	Set index buffer data

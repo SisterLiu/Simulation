@@ -8,7 +8,7 @@
 struct BlockVertex
 {
 	DirectX::XMFLOAT3 pos;
-	//DirectX::XMFLOAT2 texture;
+	DirectX::XMFLOAT2 texture;
 };
 
 typedef class Block
@@ -18,7 +18,7 @@ public:
 	ID3D11Buffer*				pIndexBuffer;
 	unsigned int iVertex;
 	unsigned int iIndex;
-	//ID3D11ShaderResourceView*	pBackground;
+	ID3D11ShaderResourceView*	pBackground;
 	D3D_PRIMITIVE_TOPOLOGY layout = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	HRESULT CreateBlockBuffer(_In_ ID3D11Device* pDevice, 

@@ -38,6 +38,10 @@ void Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd,&ps);
 			EndPaint(hWnd,&ps);
+			break;
+		case WM_QUIT:
+			PostQuitMessage(0);
+			break;
 	}
 }
 
@@ -46,14 +50,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	WinProcess winProc(hInstance, nCmdShow, 1600, 900, L"HAHA", L"Simulation");
+	WinProcess winProc(hInstance, nCmdShow, 1000, 500, L"HAHA", L"Simulation");
 	HWND hwnd = winProc.getHWND();
 	Display display(hwnd);
 	Control control;
-	//CreateWICTextureFromFile(display.getDevice(), display.getContext(), L"block.jpg", &control.pResource, &control.pResourceView);
+	CreateWICTextureFromFile(display.getDevice(), display.getContext(), L"block.jpg", &control.pResource, &control.pResourceView);
 	Block block;
 	block.CreateBlockBuffer(display.getDevice(), &block.pVertexBuffer, &block.iVertex, &block.pIndexBuffer, &block.iIndex);
-	//block.pBackground = control.pResourceView;
+	block.pBackground = control.pResourceView;
 	control.blocks.push_back(block);
 	control.pDisplay = &display;
 

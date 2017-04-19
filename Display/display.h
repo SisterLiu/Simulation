@@ -12,6 +12,7 @@ using namespace DirectX;
 struct ConstantBuffer
 {
 	DirectX::XMVECTOR PositionChange;
+	DirectX::XMVECTOR ScreenSize;
 };
 
 
@@ -51,6 +52,9 @@ private:
 	ConstantBuffer				constantBuffer;
 
 	D3D11_VIEWPORT				viewPort;
+
+	unsigned int				screenWidth;
+	unsigned int				screenHeight;
 
 	HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 

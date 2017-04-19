@@ -14,7 +14,8 @@ void Display::render(std::vector<Block> blocks)
 	//-------------------------------------
 	pDx11DeviceContext->ClearRenderTargetView(pDx11RenderTargetView, Colors::WhiteSmoke);
 
-	//constantBuffer.PositionChange = XMVectorSet(0,0,0.0,500.0);
+	constantBuffer.PositionChange = XMVectorSet(0,0,0,100);
+	constantBuffer.ScreenSize = XMVectorSet(screenWidth,screenHeight,0,0);
 
 	// Render
 	for(int i = 0; i < blocks.size(); i++)
@@ -30,8 +31,8 @@ void Display::render(std::vector<Block> blocks)
 
 void Display::renderBlock(Block block)
 {
-	//pDx11DeviceContext->UpdateSubresource(pDx11ConstantBuffer, 0, nullptr, &constantBuffer, 0, 0);
-	//pDx11DeviceContext->VSSetConstantBuffers(0, 1, &pDx11ConstantBuffer);
+	pDx11DeviceContext->UpdateSubresource(pDx11ConstantBuffer, 0, nullptr, &constantBuffer, 0, 0);
+	pDx11DeviceContext->VSSetConstantBuffers(0, 1, &pDx11ConstantBuffer);
 
 	UINT stride = sizeof(BlockVertex);
 	UINT offset = 0;
@@ -41,8 +42,8 @@ void Display::renderBlock(Block block)
 	pDx11DeviceContext->IASetIndexBuffer(block.pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	pDx11DeviceContext->VSSetShader(pDx11VertexShader, nullptr, 0);
 	pDx11DeviceContext->PSSetShader(pDx11PixelShader, nullptr, 0);
-	//pDx11DeviceContext->PSSetShaderResources(0, 1, &block.pBackground);
-	pDx11DeviceContext->DrawIndexed(6, 0, 0);
+	pDx11DeviceContext->PSSetShaderResources(0, 1, &block.pBackground);
+	pDx11DeviceContext->DrawIndexed(block.iIndex, 0, 0);
 	pDx11SwapChain->Present(0, 0);
 }
 
@@ -54,6 +55,9 @@ Display::Display(HWND hwnd)
 	GetClientRect(hwnd, &rc);
 	UINT width = rc.right - rc.left;
 	UINT height = rc.bottom - rc.top;
+	screenWidth = width;
+	screenHeight = height;
+
 
 	//-------------------------------------------------------------------------
 	//	Dx11 Device and Swap Chain
@@ -128,7 +132,7 @@ Display::Display(HWND hwnd)
 	//	Vertex Shader
 	//-------------------------------------------------------------------------
 	ID3DBlob* pBlob = nullptr;
-
+	/*
 	hr = CompileShaderFromFile(L"Display/vShader.hlsl", "main", "vs_4_0", &pBlob);
 	if(FAILED(hr))
 	{
@@ -136,6 +140,10 @@ Display::Display(HWND hwnd)
 			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
 		return;
 	}
+	*/
+	hr = D3DReadFileToBlob(L"Debug/vShader.cso",&pBlob);
+	if(FAILED(hr))
+		return;
 
 	// Create the vertex shader
 	hr = pDx11Device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pDx11VertexShader);
@@ -153,7 +161,7 @@ Display::Display(HWND hwnd)
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		//{"TEXTURE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXTURE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		//{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 	//-------------------------------------------------------------------------
@@ -174,6 +182,7 @@ Display::Display(HWND hwnd)
 	//-------------------------------------------------------------------------
 	// Compile the pixel shader
 
+	/*
 	hr = CompileShaderFromFile(L"Display/pShader.hlsl", "main", "ps_4_0", &pBlob);
 	if(FAILED(hr))
 	{
@@ -181,6 +190,10 @@ Display::Display(HWND hwnd)
 			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
 		return;
 	}
+	*/
+	hr = D3DReadFileToBlob(L"Debug/pShader.cso", &pBlob);
+	if(FAILED(hr))
+		return;
 
 	// Create the pixel shader
 	hr = pDx11Device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pDx11PixelShader);
@@ -191,7 +204,7 @@ Display::Display(HWND hwnd)
 	// Set the pixel shader
 	pDx11DeviceContext->PSSetShader(pDx11PixelShader, nullptr, 0);
 
-	/*
+	
 	//-------------------------------------------------------------------------
 	//	Vertex Texture Sampler
 	//-------------------------------------------------------------------------
@@ -229,7 +242,7 @@ Display::Display(HWND hwnd)
 	hr = pDx11Device->CreateBuffer(&bd, nullptr, &pDx11ConstantBuffer);
 	if(FAILED(hr))
 		return;
-	*/
+	
 }
 
 Display::~Display()

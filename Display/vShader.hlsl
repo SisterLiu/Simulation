@@ -1,4 +1,4 @@
-/*
+
 struct VTOP
 {
 	float4 PosNew		: SV_POSITION;
@@ -8,7 +8,8 @@ struct VTOP
 
 cbuffer ConstantBuffer : register(b0)
 {
-	float3 PositionChange;
+	float4 PositionChange;
+	float2 ScreenSize;
 }
 
 VTOP main( float4 pos : POSITION, float2  textureUV: TEXTURE)
@@ -16,7 +17,8 @@ VTOP main( float4 pos : POSITION, float2  textureUV: TEXTURE)
 	VTOP result;
 	result.PosOld = pos;
 	result.PosNew = pos;
-	//result.PosNew = result.PosOld + float4(PositionChange.xy, 0.0f, 0.0f);
+	result.PosNew.x = (pos.x * PositionChange.w - PositionChange.x*2 - ScreenSize.x) / ScreenSize.x;
+	result.PosNew.y = (-pos.y * PositionChange.w - PositionChange.y*2 -` ScreenSize.y) / ScreenSize.y;
 	if(PositionChange.z < 0.5f)
 	{
 		result.TextureUV = textureUV;
@@ -35,8 +37,4 @@ VTOP main( float4 pos : POSITION, float2  textureUV: TEXTURE)
 	}
 	return result;
 }
-*/
-float4 main(float4 pos : POSITION) : SV_POSITION
-{
-	return pos;
-}
+
