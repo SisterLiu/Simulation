@@ -1,0 +1,4 @@
+﻿C:\Users\liu\Desktop\Simulation\Simulation\Simulation\Display\pShader.hlsl(6,25-35): error X4502: invalid vs_2_0 output semantic 'SV_Target'
+C:\Users\liu\Desktop\Simulation\Simulation\Simulation\Display\vOutput.hlsli(5,17-30): error X4502: invalid vs_2_0 input semantic 'OLD_POSITION'
+  
+  compilation failed; no code produced
