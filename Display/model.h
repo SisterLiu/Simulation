@@ -18,12 +18,14 @@ public:
 	ID3D11Buffer*				pIndexBuffer;
 	unsigned int iVertex;
 	unsigned int iIndex;
+	int x;
+	int y;
+	int rotation;
+	int size=100;
 	ID3D11ShaderResourceView*	pBackground;
 	D3D_PRIMITIVE_TOPOLOGY layout = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	HRESULT CreateBlockBuffer(_In_ ID3D11Device* pDevice, 
-		_Out_ ID3D11Buffer** ppVertexBuffer, _Out_ unsigned int* pVertexCount,
-		_Out_ ID3D11Buffer** ppIndexBuffer, _Out_ unsigned int* pIndexCount);
+	HRESULT CreateBlockBuffer(_In_ ID3D11Device* pDevice);
 private:
 
 }BLOCK;

@@ -9,6 +9,7 @@
 
 using namespace DirectX;
 
+
 struct ConstantBuffer
 {
 	DirectX::XMVECTOR PositionChange;
@@ -34,7 +35,8 @@ public:
 		return pDx11DeviceContext;
 	}
 
-
+	unsigned int				screenWidth;
+	unsigned int				screenHeight;
 private:
 	ID3D11Device*				pDx11Device;
 	ID3D11DeviceContext*		pDx11DeviceContext;
@@ -52,10 +54,7 @@ private:
 	ConstantBuffer				constantBuffer;
 
 	D3D11_VIEWPORT				viewPort;
-
-	unsigned int				screenWidth;
-	unsigned int				screenHeight;
-
+	
 	HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 
 	

@@ -17,8 +17,8 @@ VTOP main( float4 pos : POSITION, float2  textureUV: TEXTURE)
 	VTOP result;
 	result.PosOld = pos;
 	result.PosNew = pos;
-	result.PosNew.x = (pos.x * PositionChange.w - PositionChange.x*2 - ScreenSize.x) / ScreenSize.x;
-	result.PosNew.y = (-pos.y * PositionChange.w - PositionChange.y*2 -` ScreenSize.y) / ScreenSize.y;
+	result.PosNew.x = (pos.x * PositionChange.w + PositionChange.x*2 - ScreenSize.x) / ScreenSize.x;
+	result.PosNew.y = -(pos.y * PositionChange.w + PositionChange.y*2 - ScreenSize.y) / ScreenSize.y;
 	if(PositionChange.z < 0.5f)
 	{
 		result.TextureUV = textureUV;

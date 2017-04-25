@@ -14,8 +14,7 @@ void Display::render(std::vector<Block> blocks)
 	//-------------------------------------
 	pDx11DeviceContext->ClearRenderTargetView(pDx11RenderTargetView, Colors::WhiteSmoke);
 
-	constantBuffer.PositionChange = XMVectorSet(0,0,0,100);
-	constantBuffer.ScreenSize = XMVectorSet(screenWidth,screenHeight,0,0);
+	
 
 	// Render
 	for(int i = 0; i < blocks.size(); i++)
@@ -26,11 +25,13 @@ void Display::render(std::vector<Block> blocks)
 	//
 	// Present our back buffer to our front buffer
 	//
-	//pDx11SwapChain->Present(0, 0);
+	pDx11SwapChain->Present(0, 0);
 }
 
 void Display::renderBlock(Block block)
 {
+	constantBuffer.PositionChange = XMVectorSet(block.x, block.y, block.rotation, block.size);
+	constantBuffer.ScreenSize = XMVectorSet(screenWidth, screenHeight, 0, 0);
 	pDx11DeviceContext->UpdateSubresource(pDx11ConstantBuffer, 0, nullptr, &constantBuffer, 0, 0);
 	pDx11DeviceContext->VSSetConstantBuffers(0, 1, &pDx11ConstantBuffer);
 
@@ -40,11 +41,8 @@ void Display::renderBlock(Block block)
 	pDx11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pDx11DeviceContext->IASetVertexBuffers(0, 1, &block.pVertexBuffer, &stride, &offset);
 	pDx11DeviceContext->IASetIndexBuffer(block.pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	pDx11DeviceContext->VSSetShader(pDx11VertexShader, nullptr, 0);
-	pDx11DeviceContext->PSSetShader(pDx11PixelShader, nullptr, 0);
 	pDx11DeviceContext->PSSetShaderResources(0, 1, &block.pBackground);
 	pDx11DeviceContext->DrawIndexed(block.iIndex, 0, 0);
-	pDx11SwapChain->Present(0, 0);
 }
 
 Display::Display(HWND hwnd)
@@ -141,9 +139,13 @@ Display::Display(HWND hwnd)
 		return;
 	}
 	*/
-	hr = D3DReadFileToBlob(L"Debug/vShader.cso",&pBlob);
+	hr = D3DReadFileToBlob(L"../Debug/vShader.cso",&pBlob);
 	if(FAILED(hr))
+	{
+		MessageBox(nullptr,
+			L"The vShader file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
 		return;
+	}
 
 	// Create the vertex shader
 	hr = pDx11Device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pDx11VertexShader);
@@ -191,9 +193,13 @@ Display::Display(HWND hwnd)
 		return;
 	}
 	*/
-	hr = D3DReadFileToBlob(L"Debug/pShader.cso", &pBlob);
+	hr = D3DReadFileToBlob(L"../Debug/pShader.cso", &pBlob);
 	if(FAILED(hr))
+	{
+		MessageBox(nullptr,
+			L"The pShader file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
 		return;
+	}
 
 	// Create the pixel shader
 	hr = pDx11Device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pDx11PixelShader);

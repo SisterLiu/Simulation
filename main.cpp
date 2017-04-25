@@ -18,51 +18,78 @@ public:
 			pDisplay->render(blocks);
 		}
 	}
+
+	static void Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		HDC hdc;
+		PAINTSTRUCT ps;
+		switch(message)
+		{
+			case WM_PAINT:
+				hdc = BeginPaint(hWnd, &ps);
+				EndPaint(hWnd, &ps);
+				break;
+			case WM_DESTROY:
+				PostQuitMessage(0);
+				break;
+		}
+	}
+
+	Control(Display* pDisplay)
+	{
+		this->pDisplay = pDisplay;
+		this->screenWidth = pDisplay->screenWidth;
+		this->screenHeight = pDisplay->screenHeight;
+	}
+
+	void initial()
+	{
+		ID3D11Resource* pResource;
+		ID3D11ShaderResourceView* pResourceView;
+		CreateWICTextureFromFile(pDisplay->getDevice(), pDisplay->getContext(), L"block.jpg", &pResource, &pResourceView);
+		resources.push_back(pResource);
+		resourceViews.push_back(pResourceView);
+		Block block;
+		block.CreateBlockBuffer(pDisplay->getDevice());
+		block.pBackground = resourceViews[0];
+		int c = 100;
+		for(int i=0;i<c;i++)
+			for(int j = 0; j < c; j++)
+			{
+				block.rotation = (i+j)%4;
+				block.size = screenHeight/(c+1);
+				block.x = i * (block.size+1) + 350;
+				block.y = j * (block.size+1);
+				blocks.push_back(block);
+			}
+	}
+
 	static Display* pDisplay;
 	static std::vector<Block> blocks;
-	static ID3D11Resource* pResource;
-	static ID3D11ShaderResourceView* pResourceView;
+	std::vector<ID3D11Resource*> resources;
+	std::vector<ID3D11ShaderResourceView*> resourceViews;
+	int screenWidth;
+	int screenHeight;
 };
 
 Display* Control::pDisplay;
 std::vector<Block> Control::blocks;
-ID3D11Resource* Control::pResource;
-ID3D11ShaderResourceView* Control::pResourceView;
 
-void Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	HDC hdc;
-	PAINTSTRUCT ps;
-	switch(message)
-	{
-		case WM_PAINT:
-			hdc = BeginPaint(hWnd,&ps);
-			EndPaint(hWnd,&ps);
-			break;
-		case WM_QUIT:
-			PostQuitMessage(0);
-			break;
-	}
-}
+
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	WinProcess winProc(hInstance, nCmdShow, 1000, 500, L"HAHA", L"Simulation");
-	HWND hwnd = winProc.getHWND();
-	Display display(hwnd);
-	Control control;
-	CreateWICTextureFromFile(display.getDevice(), display.getContext(), L"block.jpg", &control.pResource, &control.pResourceView);
-	Block block;
-	block.CreateBlockBuffer(display.getDevice(), &block.pVertexBuffer, &block.iVertex, &block.pIndexBuffer, &block.iIndex);
-	block.pBackground = control.pResourceView;
-	control.blocks.push_back(block);
-	control.pDisplay = &display;
+	WinProcess winProc(hInstance, nCmdShow, 1500, 800, L"HAHA", L"Simulation");
+	Display display(winProc.getHWND());
+	Control control(&display);
+
+	control.initial();
 
 	//	PROCESSCALLBACK
-	winProc.setProcessCallback(Proc);
+	winProc.setProcessCallback(control.Proc);
 	//	LOOPCALLBACK
 	winProc.setLoopCallback(control.render60);
 	return winProc.loop();
