@@ -5,7 +5,8 @@
 #include <directxmath.h>
 #include <directxcolors.h>
 #include <vector>
-#include "model.h"
+#include "../Simulator/panel.h"
+#include "../TextureLoader/WICTextureLoader.h"
 
 using namespace DirectX;
 
@@ -20,7 +21,7 @@ struct ConstantBuffer
 typedef class Display
 {
 public:
-	void render(std::vector<Block>);// render a frame
+	void render(Panel);// render a frame
 	void renderBlock(Block);
 
 	Display(HWND);
@@ -61,3 +62,25 @@ private:
 }DX11DISPLAYER, *PDX11DISPLAYER;
 
 
+typedef class BackgroundLoader
+{
+	public:
+	BackgroundLoader();
+	BackgroundLoader(PDX11DISPLAYER pDisplay);
+	bool addBackground(const wchar_t*);
+	void removeBackground(int i);
+	void clear();
+	void setDisplayer(PDX11DISPLAYER pDisplay);
+
+	ID3D11ShaderResourceView*& operator[] (int index);
+	
+	private:
+	struct BackgroundResource
+	{
+		ID3D11Resource* pBackground;
+		ID3D11ShaderResourceView* pBackgroundView;
+	};
+
+	PDX11DISPLAYER pDisplayer;
+	std::vector<BackgroundResource> backgrounds;
+} BACKGROUNDLOADER, *PBACKGROUNDLOADER;

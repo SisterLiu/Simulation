@@ -25,6 +25,9 @@
     <Filter Include="Display\Assimp">
       <UniqueIdentifier>{97577b59-7c60-4677-85ad-62c3b644a1d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Simulator">
+      <UniqueIdentifier>{5015eb73-3f6f-4199-8053-b359baed9c30}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -42,6 +45,15 @@
     <ClCompile Include="Display\model.cpp">
       <Filter>Display</Filter>
     </ClCompile>
+    <ClCompile Include="Simulator\panel.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulator\dice.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="log.cpp">
+      <Filter>WinProcess</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WinProcess\winProcess.h">
@@ -55,6 +67,18 @@
     </ClInclude>
     <ClInclude Include="Display\model.h">
       <Filter>Display</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulator\panel.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulator\animal.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulator\dice.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="log.h">
+      <Filter>WinProcess</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

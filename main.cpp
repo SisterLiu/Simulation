@@ -2,6 +2,10 @@
 #include "WinProcess/winProcess.h"
 #include "Display/display.h"
 #include "TextureLoader/WICTextureLoader.h"
+#include "simulator/panel.h"
+#include "simulator/dice.h"
+#include <iostream>
+#include "log.h"
 
 class Control
 {
@@ -15,19 +19,36 @@ public:
 		if(cur - Timer > 1000 / 120.0)
 		{
 			Timer = cur;
-			pDisplay->render(blocks);
+			pDisplay->render(panel);
+
+			if(hWnd)
+			{
+				HDC hdc = GetDC(hWnd);
+				TEXTMETRIC tm;
+				GetTextMetrics(hdc, &tm);
+
+				wchar_t* buffer;
+				int count = 0;
+				while((buffer = (wchar_t*)log.getLine()) != NULL)
+				{
+					TextOut(hdc,0,tm.tmHeight*count,buffer,wcslen(buffer));
+					count++;
+				}
+				ValidateRect(hWnd,NULL);
+				ReleaseDC(hWnd,hdc);
+			}
 		}
 	}
 
 	static void Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		HDC hdc;
+		Control::hWnd = hWnd;
 		PAINTSTRUCT ps;
 		switch(message)
 		{
 			case WM_PAINT:
-				hdc = BeginPaint(hWnd, &ps);
-				EndPaint(hWnd, &ps);
+				BeginPaint(hWnd,&ps);
+				EndPaint(hWnd,&ps);
 				break;
 			case WM_DESTROY:
 				PostQuitMessage(0);
@@ -40,41 +61,56 @@ public:
 		this->pDisplay = pDisplay;
 		this->screenWidth = pDisplay->screenWidth;
 		this->screenHeight = pDisplay->screenHeight;
+		this->bgLoader = BackgroundLoader(pDisplay);
+
+		//	log
+		//this->pDisplay->setLog(&log);
+		this->hWnd = NULL;
 	}
 
 	void initial()
 	{
-		ID3D11Resource* pResource;
-		ID3D11ShaderResourceView* pResourceView;
-		CreateWICTextureFromFile(pDisplay->getDevice(), pDisplay->getContext(), L"block.jpg", &pResource, &pResourceView);
-		resources.push_back(pResource);
-		resourceViews.push_back(pResourceView);
-		Block block;
-		block.CreateBlockBuffer(pDisplay->getDevice());
-		block.pBackground = resourceViews[0];
-		int c = 100;
-		for(int i=0;i<c;i++)
-			for(int j = 0; j < c; j++)
+		bgLoader.addBackground(L"img/block.jpg");
+		bgLoader.addBackground(L"img/block2.png");
+		cellBuffer.CreateBuffer(pDisplay->getDevice());
+		panel = Panel(10, 10);
+		for(int i=0;i<panel.cxSize();i++)
+			for(int j = 0; j < panel.cySize(); j++)
 			{
-				block.rotation = (i+j)%4;
-				block.size = screenHeight/(c+1);
-				block.x = i * (block.size+1) + 350;
-				block.y = j * (block.size+1);
-				blocks.push_back(block);
+				panel.cellAt(i,j).rotation = (i+j)%4;
+				panel.cellAt(i, j).size = screenHeight/(panel.cySize() +1);
+				panel.cellAt(i, j).x = i * (panel.cellAt(i, j).size +1)+100;
+				panel.cellAt(i, j).y = j * (panel.cellAt(i, j).size +1);
+				panel.cellAt(i, j).pBackground = bgLoader[(i+j)%2];
+				panel.cellAt(i, j) = cellBuffer;
 			}
+		Dice dice;
+
+		for(int i = 0; i < 5; i++)
+		{
+			dice.addLot(i,i);
+		}
+
+		for(int i = 0; i < 50; i++)
+			log.addLog(L""+i);
+
+
 	}
 
 	static Display* pDisplay;
-	static std::vector<Block> blocks;
-	std::vector<ID3D11Resource*> resources;
-	std::vector<ID3D11ShaderResourceView*> resourceViews;
+	BackgroundLoader bgLoader;
+	CellBuffer cellBuffer;
+	static Panel panel;
+	static WLog log;
+	static HWND hWnd;
 	int screenWidth;
 	int screenHeight;
 };
 
 Display* Control::pDisplay;
-std::vector<Block> Control::blocks;
-
+Panel Control::panel;
+WLog Control::log;
+HWND Control::hWnd;
 
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
@@ -82,7 +118,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	WinProcess winProc(hInstance, nCmdShow, 1500, 800, L"HAHA", L"Simulation");
+	WinProcess winProc(hInstance, nCmdShow, 1000, 800, L"HAHA", L"Simulation");
 	Display display(winProc.getHWND());
 	Control control(&display);
 

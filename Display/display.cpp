@@ -5,7 +5,7 @@ using namespace DirectX;
 #define PI 3.14159265359f
 #define R(x) (x * PI / 180.0f)
 
-void Display::render(std::vector<Block> blocks)
+void Display::render(Panel panel)
 {
 	//updateCamera();
 
@@ -13,14 +13,13 @@ void Display::render(std::vector<Block> blocks)
 	// Clear the back buffer
 	//-------------------------------------
 	pDx11DeviceContext->ClearRenderTargetView(pDx11RenderTargetView, Colors::WhiteSmoke);
-
 	
-
 	// Render
-	for(int i = 0; i < blocks.size(); i++)
-	{
-		renderBlock(blocks[i]);
-	}
+	for(int i = 0; i < panel.cySize(); i++)
+		for(int j=0;j<panel.cxSize();j++)
+		{
+			renderBlock(panel.cellAt(j,i));
+		}
 
 	//
 	// Present our back buffer to our front buffer
@@ -139,7 +138,7 @@ Display::Display(HWND hwnd)
 		return;
 	}
 	*/
-	hr = D3DReadFileToBlob(L"../Debug/vShader.cso",&pBlob);
+	hr = D3DReadFileToBlob(L"Debug/vShader.cso",&pBlob);
 	if(FAILED(hr))
 	{
 		MessageBox(nullptr,
@@ -193,7 +192,7 @@ Display::Display(HWND hwnd)
 		return;
 	}
 	*/
-	hr = D3DReadFileToBlob(L"../Debug/pShader.cso", &pBlob);
+	hr = D3DReadFileToBlob(L"Debug/pShader.cso", &pBlob);
 	if(FAILED(hr))
 	{
 		MessageBox(nullptr,
@@ -306,4 +305,62 @@ HRESULT Display::CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, L
 	if(pErrorBlob) pErrorBlob->Release();
 
 	return S_OK;
+}
+
+//	BackgroundLoader
+
+BackgroundLoader::BackgroundLoader()
+{
+	this->pDisplayer = NULL;
+}
+
+BackgroundLoader::BackgroundLoader(PDX11DISPLAYER pDisplayer)
+{
+	this->pDisplayer = pDisplayer;
+}
+
+void BackgroundLoader::setDisplayer(PDX11DISPLAYER pDisplayer)
+{
+	this->pDisplayer = pDisplayer;
+}
+
+bool BackgroundLoader::addBackground(const wchar_t* wcstr)
+{
+	if(this->pDisplayer == NULL)return false;
+	BackgroundResource BR;
+	HRESULT hr = S_OK;
+	hr = CreateWICTextureFromFile(pDisplayer->getDevice(), pDisplayer->getContext(),\
+		wcstr, &BR.pBackground, &BR.pBackgroundView);
+	if(!SUCCEEDED(hr))
+		return false;
+	backgrounds.push_back(BR);
+	return true;
+}
+
+void BackgroundLoader::removeBackground(int i)
+{
+	if(i < 0 || i >= backgrounds.size())
+		return;
+	if(backgrounds[i].pBackground != NULL)
+		backgrounds[i].pBackground->Release();
+	if(backgrounds[i].pBackgroundView != NULL)
+		backgrounds[i].pBackgroundView->Release();
+	backgrounds.erase(backgrounds.begin()+i);
+}
+
+void BackgroundLoader::clear()
+{
+	for(int i = 0; i < backgrounds.size(); i++)
+	{
+		if(backgrounds[i].pBackground != NULL)
+			backgrounds[i].pBackground->Release();
+		if(backgrounds[i].pBackgroundView != NULL)
+			backgrounds[i].pBackgroundView->Release();
+	}
+	backgrounds.clear();
+}
+
+ID3D11ShaderResourceView*& BackgroundLoader::operator [] (int index)
+{
+	return backgrounds[index].pBackgroundView;
 }
